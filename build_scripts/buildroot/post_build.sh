@@ -8,7 +8,7 @@ source $BASE_DIR/.mod_env
 create_version()
 {
     pushd $1 > /dev/null
-    version="$(date +%F --tags)-AD5M-$(date +%Y%m%d)"
+    version="$(date +%F)-AD5M-$(date +%Y%m%d)"
     popd  > /dev/null
     echo $version
 }
@@ -33,7 +33,7 @@ date -u '+%Y-%m-%d %H:%M:%S' > $TARGET_ROOT/etc/fake-hwclock.data
 
 # update os-release
 pushd $GIT_ROOT
-KLIPPER_MOD_VERSION=$(date +%F --tags)
+KLIPPER_MOD_VERSION=$(date +%F)
 popd
 
 cat << EOF > $TARGET_ROOT/etc/os-release
