@@ -27,7 +27,9 @@ jobs:
 
     - name: Build firmware (lite)
       run: |
-        make clean
+        ./build_scripts/build.sh clean_sdk
+        ./build_scripts/build.sh prepare_sdk
+        ./build_scripts/build.sh build_sdk
         make lite
 
     - name: Find firmware and compute hash
