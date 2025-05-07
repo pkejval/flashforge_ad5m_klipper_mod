@@ -2,6 +2,12 @@
 This repo is created for automatic nightly build of firmware with newest versions of Klipper and Moonraker to keep our belowed printer on date.
 All credits for hard work goes to @xblax and his [repo](https://github.com/xblax/flashforge_ad5m_klipper_mod)
 
+
+Latest release can be found at: [![Latest Release](https://img.shields.io/github/v/release/OWNER/REPO?logo=github)](https://github.com/pkejval/flashforge_ad5m_klipper_mod/releases/latest)
+
+
+
+
 [![Mainsail](docs/images/mainsail_01_thumb.jpg)](docs/images/mainsail_01.jpg)
 [![Fluidd](docs/images/fluidd_01_thumb.png)](docs/images/fluidd_01.png)
 [![NoScreen](docs/images/no_screen_01_thumb.jpg)](docs/images/no_screen_01.jpg)
