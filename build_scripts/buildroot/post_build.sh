@@ -8,7 +8,7 @@ source $BASE_DIR/.mod_env
 create_version()
 {
     pushd $1 > /dev/null
-    version="$(date +%F)-AD5M-$(date +%Y%m%d)"
+    version="AD5M-$(date +%F)"
     popd  > /dev/null
     echo $version
 }
@@ -33,7 +33,17 @@ date -u '+%Y-%m-%d %H:%M:%S' > $TARGET_ROOT/etc/fake-hwclock.data
 
 # update os-release
 pushd $GIT_ROOT
-KLIPPER_MOD_VERSION=$(date +%F)
+KLIPPER_MOD_VERSION=$(
+  git submodule status klipper |              \
+  awk '{
+          if (match($0, /\(([^)]+)\)/, v)) { 
+              gsub(/^remotes\/origin\//, "", v[1]);
+              print v[1];
+          } else {
+              print substr($1,2,7);
+          }
+       }'
+)
 popd
 
 cat << EOF > $TARGET_ROOT/etc/os-release

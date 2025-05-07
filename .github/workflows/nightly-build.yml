@@ -93,18 +93,18 @@ jobs:
           echo "NO_CHANGE=false" >> $GITHUB_ENV
         fi
 
-    - name: Collect submodule commit hashes
+    - name: Collect submodule versions
       if: env.NO_CHANGE == 'false'
       run: |
         echo "### Submodule versions" > release_notes.md
-        git submodule status --recursive | while read -r hash path rest; do
-          cd "$path"
-          commit=$(git rev-parse HEAD)
-          remote=$(git remote get-url origin)
-          branch=$(git rev-parse --abbrev-ref HEAD)
-          echo "- [$path]($remote) @ \`$commit\` (branch: $branch)" >> ../release_notes.md
-          cd - > /dev/null
-        done
+        git submodule status --recursive | \
+        awk '{
+            sub(/.*\//,"",$2);
+            if (match($0,/\(([^)]+)\)/,v)) {
+                gsub(/^remotes\/origin\//,"",v[1])
+                printf "- %s (%s)\n", $2, v[1]
+            }
+        }' >> release_notes.md
 
     - name: Get today date
       id: date
