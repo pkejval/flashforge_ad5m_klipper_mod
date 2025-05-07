@@ -82,7 +82,7 @@ index c09160d..4943301 100644
  
 @@ -33,13 +33,13 @@ ifndef CONFIG_NO_GITVER
  ifeq ($(wildcard ../.git),../.git)
- GITVER := $(shell git rev-parse --short HEAD --dirty=+)
+ GITVER := $(shell git describe --tags --always --dirty=+)
  ifneq ($(GITVER),)
 -CFLAGS += -DGIT_VERSION_STR_POSTFIX=\"-$(GITVER)\"
 +override CFLAGS += -DGIT_VERSION_STR_POSTFIX=\"-$(GITVER)\"
