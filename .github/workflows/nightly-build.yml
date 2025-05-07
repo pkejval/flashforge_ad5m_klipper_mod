@@ -41,16 +41,22 @@ jobs:
           libelf-dev python3 python3-pip python3-venv build-essential cmake unzip wget jq curl
 
     - name: Restore Buildroot sdk cache
-      uses: actions/cache@v4
+      uses: actions/cache/restore@v4
       with:
-        path: |
-          build_output/buildroot/sdk
-        key: buildroot-host-${{ hashFiles('submodules/buildroot/package/Config.in') }}-${{ hashFiles('build_scripts/buildroot/.config') }}
-        restore-keys: buildroot-sdk-
+        path: build_output/buildroot/sdk
+        key: buildroot-host-${{ hashFiles('build_scripts/buildroot/.config') }}
+        restore-keys: buildroot-host-
 
     - name: Build firmware (lite)
       run: |
         make lite
+
+    - name: Save (update) Buildroot host cache
+      if: always()
+      uses: actions/cache/save@v4
+      with:
+        path: build_output/buildroot/sdk/host
+        key: ${{ steps.br-host.outputs.cache-primary-key }}
 
     - name: Find firmware and compute hash
       id: firmware
