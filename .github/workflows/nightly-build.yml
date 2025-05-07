@@ -1,0 +1,96 @@
+name: Nightly firmware build
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0 
+
+    - name: Update submodules to latest remote commits
+      run: |
+        git submodule update --init --recursive --remote
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y git make gcc g++ libncurses-dev bc bison flex libssl-dev \
+          libelf-dev python3 python3-pip python3-venv build-essential cmake unzip wget jq curl
+
+    - name: Build firmware (lite)
+      run: |
+        make clean
+        make lite
+
+    - name: Find firmware and compute hash
+      id: firmware
+      run: |
+        mkdir build_hash
+        FILE1=$(find build_output/packages -type f -name "Adventurer5M-KlipperMod-*.tgz" | head -n 1)
+        FILE2=$(find build_output/packages -type f -name "Adventurer5MPro-KlipperMod-*.tgz" | head -n 1)
+        echo "firmware1=$FILE1" >> $GITHUB_OUTPUT
+        echo "firmware2=$FILE2" >> $GITHUB_OUTPUT
+        sha256sum "$FILE1" > build_hash/firmware1.sha256
+        sha256sum "$FILE2" > build_hash/firmware2.sha256
+
+    - name: Get latest release firmware for comparison
+      run: |
+        mkdir previous || true
+        gh release download --repo ${{ github.repository }} --pattern '*.tgz' --dir previous || true
+        if compgen -G "previous/*.tgz" > /dev/null; then
+          sha256sum previous/*.tgz > build_hash/previous.sha256
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Compare hashes
+      id: compare
+      run: |
+        if [ -f build_hash/previous.sha256 ]; then
+          cat build_hash/firmware1.sha256 build_hash/firmware2.sha256 > build_hash/current.sha256
+          if diff -q build_hash/current.sha256 build_hash/previous.sha256 > /dev/null; then
+            echo "NO_CHANGE=true" >> $GITHUB_ENV
+          else
+            echo "NO_CHANGE=false" >> $GITHUB_ENV
+          fi
+        else
+          echo "NO_CHANGE=false" >> $GITHUB_ENV
+        fi
+
+    - name: Collect submodule commit hashes
+      if: env.NO_CHANGE == 'false'
+      run: |
+        echo "### Submodule versions" > release_notes.md
+        git submodule status --recursive | while read -r hash path rest; do
+          cd "$path"
+          commit=$(git rev-parse HEAD)
+          remote=$(git remote get-url origin)
+          branch=$(git rev-parse --abbrev-ref HEAD)
+          echo "- [$path]($remote) @ \`$commit\` (branch: $branch)" >> ../release_notes.md
+          cd - > /dev/null
+        done
+
+    - name: Get today date
+      id: date
+      run: echo "today=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+    - name: Create release if firmware changed
+      if: env.NO_CHANGE == 'false'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.date.outputs.today }}
+        name: ${{ steps.date.outputs.today }}
+        body_path: release_notes.md
+        files: |
+          ${{ steps.firmware.outputs.firmware1 }}
+          ${{ steps.firmware.outputs.firmware2 }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN }}
