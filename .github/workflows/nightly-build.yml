@@ -20,6 +20,11 @@ jobs:
       run: |
         git submodule update --init --recursive --remote
 
+    - name: Override libsvgtiny with authors version
+      run: |
+        rm -rf submodules/buildroot/package/libsvgtiny || true
+        sed -i '/libsvgtiny\/Config.in/s/^/#/' submodules/buildroot/package/Config.in
+
     - name: Install dependencies
       run: |
         sudo apt update
