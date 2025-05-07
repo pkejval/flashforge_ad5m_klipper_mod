@@ -1,3 +1,6 @@
+# Purpose of this repo
+This repo is created for automatic nightly build of firmware with newest versions of Klipper and Moonraker to keep our belowed printer on date.
+All credits for hard work goes to @xblax and his [repo](https://github.com/xblax/flashforge_ad5m_klipper_mod)
 
 [![Mainsail](docs/images/mainsail_01_thumb.jpg)](docs/images/mainsail_01.jpg)
 [![Fluidd](docs/images/fluidd_01_thumb.png)](docs/images/fluidd_01.png)
