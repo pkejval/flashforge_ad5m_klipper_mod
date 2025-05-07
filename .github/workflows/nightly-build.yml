@@ -40,23 +40,58 @@ jobs:
         sudo apt install -y git make gcc g++ libncurses-dev bc bison flex libssl-dev \
           libelf-dev python3 python3-pip python3-venv build-essential cmake unzip wget jq curl
 
-    - name: Restore Buildroot sdk cache
+    - name: Restore Buildroot host
+      id: cache-host
       uses: actions/cache/restore@v4
       with:
-        path: build_output/buildroot/sdk
-        key: buildroot-host-${{ hashFiles('build_scripts/buildroot/.config') }}
-        restore-keys: buildroot-host-
+        path: |
+          build_output/buildroot/sdk/host
+          build_output/buildroot/sdk/staging
+        key: br-host-${{ hashFiles('build_scripts/buildroot/.config') }}
+        restore-keys: br-host-
+        
+    - name: Restore Buildroot downloads
+      id: cache-dl
+      uses: actions/cache/restore@v4
+      with:
+        path: build_output/buildroot/dl
+        key: br-dl-v1
+        restore-keys: br-dl-
+        
+    - name: Restore ccache
+      id: cache-cc
+      uses: actions/cache/restore@v4
+      with:
+        path: ~/.ccache
+        key: br-ccache-${{ github.ref_name }}
+        restore-keys: br-ccache-
 
     - name: Build firmware (lite)
       run: |
         make lite
 
-    - name: Save (update) Buildroot host cache
+    - name: Save Buildroot host
       if: always()
       uses: actions/cache/save@v4
       with:
-        path: build_output/buildroot/sdk/host
-        key: ${{ steps.br-host.outputs.cache-primary-key }}
+        path: |
+          build_output/buildroot/sdk/host
+          build_output/buildroot/sdk/staging
+        key: ${{ steps.cache-host.outputs.cache-primary-key }}
+    
+    - name: Save Buildroot downloads
+      if: steps.cache-dl.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: build_output/buildroot/dl
+        key: br-dl-v1
+    
+    - name: Save ccache
+      if: always()
+      uses: actions/cache/save@v4
+      with:
+        path: ~/.ccache
+        key: ${{ steps.cache-cc.outputs.cache-primary-key }}
 
     - name: Find firmware and compute hash
       id: firmware
