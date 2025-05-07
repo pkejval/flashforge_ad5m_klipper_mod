@@ -13,8 +13,8 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        fetch-depth: 0 
-        tags: true
+        fetch-depth: 0
+        fetch-tags: true
 
     - name: Update submodules to latest remote commits
       run: |
