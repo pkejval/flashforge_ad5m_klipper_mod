@@ -20,10 +20,19 @@ jobs:
       run: |
         git submodule update --init --recursive --remote
 
-    - name: Override libsvgtiny with authors version
+    - name: Disable upstream duplicates of project-local Buildroot packages
       run: |
-        rm -rf submodules/buildroot/package/libsvgtiny || true
-        sed -i '/libsvgtiny\/Config.in/s/^/#/' submodules/buildroot/package/Config.in
+        PROJECT_PKGS_DIR="build_scripts/buildroot/package"
+        UPSTREAM_PKGS_DIR="submodules/buildroot/package"
+        CONFIG_IN="${UPSTREAM_PKGS_DIR}/Config.in"
+        
+        for pkg in $(find "$PROJECT_PKGS_DIR" -maxdepth 1 -mindepth 1 -type d -printf '%f\n'); do
+          if [ -d "${UPSTREAM_PKGS_DIR}/${pkg}" ]; then
+            echo "⚠️  Removing upstream duplicate of ${pkg}"
+            rm -rf "${UPSTREAM_PKGS_DIR}/${pkg}"
+            sed -i "/package\/${pkg//\//\\/}\/Config.in/s/^/#/" "$CONFIG_IN"
+          fi
+        done
 
     - name: Install dependencies
       run: |
