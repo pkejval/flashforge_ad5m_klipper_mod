@@ -1,4 +1,7 @@
 # Purpose of this repo
+
+DO NOT INSTALL if you don't want to help with developement! Currently Moonraker/Klipper is failing because printer board is running old FW. Working on it!
+
 This repo is created for automatic nightly build of firmware with newest versions of Klipper and Moonraker to keep our belowed printer on date.
 All credits for hard work goes to @xblax and his [repo](https://github.com/xblax/flashforge_ad5m_klipper_mod)
 
